@@ -1,0 +1,284 @@
+openapi: 3.0.0
+info:
+  x-previous-api-name: ---
+  x-previous-api-title: ---
+  x-previous-api-version: ---
+  x-product-name-contains-this-api: paymentqr
+  x-product-title-contains-this-api: Плати QR
+  x-product-version-contains-this-api: 1.0.0
+  x-ibm-name: ordercreateqr
+  title: Создание заказа
+  version: 1.0.0
+  description: Клиент направляет запрос на формирование заказа в АС Сбербанка. В ответ
+    получает присвоенный Идентификатор заказа в АС Сбербанк (впоследствии
+    используется в качестве ключа для инициации других операций с заказом),
+    ссылку для генерации QR кода.
+security:
+  - clientIdHeader: []
+    Oauth:
+      - https://api.sberbank.ru/order.create
+      - https://api.sberbank.ru/order.status
+x-ibm-configuration:
+  testable: true
+  enforced: true
+  phase: realized
+paths:
+  /creation:
+    post:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/qr-creation-response"
+        "400":
+          description: Client Error 400 Bad Request (Запрос не корректен)
+        "401":
+          description: Client Error 401 Unauthorized (Приложение не авторизовано, либо
+            некорректное значение client-id)
+        "405":
+          description: Method Not Allowed (Ошибка API gateway, не найдены операции,
+            поддерживающие запрошенную http-команду)
+        "429":
+          description: Too Many Requests (Превышен лимит отправляемых запросов)
+        "500":
+          description: Server Error 500 Internal Server Error (Внутренняя ошибка сервера)
+        "503":
+          description: Service Unavailable (Операция не доступна)
+      parameters:
+        - name: x-Introspect-RqUID
+          required: true
+          in: header
+          description: Уникальный идентификатор запроса
+          schema:
+            type: string
+            pattern: ^(([0-9]|[a-f]|[A-F]){32})$
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/qr-creation-request"
+        description: Тело запроса
+        required: true
+  /status:
+    post:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/qr-creation-response"
+        "400":
+          description: Client Error 400 Bad Request (Запрос не корректен)
+        "401":
+          description: Client Error 401 Unauthorized (Приложение не авторизовано, либо
+            некорректное значение client-id)
+        "405":
+          description: Method Not Allowed (Ошибка API gateway, не найдены операции,
+            поддерживающие запрошенную http-команду)
+        "429":
+          description: Too Many Requests (Превышен лимит отправляемых запросов)
+        "500":
+          description: Server Error 500 Internal Server Error (Внутренняя ошибка сервера)
+        "503":
+          description: Service Unavailable (Операция не доступна)
+      parameters:
+        - name: x-Introspect-RqUID
+          required: true
+          in: header
+          description: Уникальный идентификатор запроса
+          schema:
+            type: string
+            pattern: ^(([0-9]|[a-f]|[A-F]){32})$
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/qr-creation-request"
+        description: Тело запроса
+        required: true
+tags: []
+x-ibm-endpoints:
+  - endpointUrl: https://sec.api.sberbank.ru/ru/prod
+    type:
+      - production
+  - endpointUrl: https://open.api.sberbank.ru/ru/prod
+    type:
+      - production
+  - endpointUrl: https://api.sberbank.ru/ru/prod
+    type:
+      - production
+  - endpointUrl: https://dev.api.sberbank.ru/ru/prod
+    type:
+      - development
+servers:
+  - url: /order/v1
+components:
+  securitySchemes:
+    clientIdHeader:
+      type: apiKey
+      in: header
+      name: X-IBM-Client-Id
+    Oauth:
+      type: oauth2
+      description: ""
+      x-tokenUrl:
+        headers:
+          RqUID: paramx-Introspect-RqUID
+      x-tokenIntrospect:
+        url: https://api.sberbank.ru:36963/ru/tech/oauth/v1/introspect
+        tls-profile: introspection-client
+      flows:
+        clientCredentials:
+          tokenUrl: https://dev.api.sberbank.ru/ru/prod/tokens/v2/oauth
+          scopes:
+            https://api.sberbank.ru/order.create: Скоуп для создания заказа
+  schemas:
+    qr-creation-request:
+      properties:
+        rq_uid:
+          type: string
+          maxLength: 32
+          description: Уникальный идентификатор запроса. Параметр должен совпадать с
+            передаваемым в HTTP-заголовке параметром x-Introspect-RqUID
+          example: ac11cA1CEae1D1111dABf1fD1Bb0acAd
+        rq_tm:
+          type: string
+          description: Дата/Время формирования запроса
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          example: 2005-08-15T15:52:01Z
+        member_id:
+          type: string
+          maxLength: 32
+          description: Идентификатор клиента
+          example: "000001"
+        order_number:
+          type: string
+          maxLength: 36
+          description: Номер заказа в CRM Клиента
+          example: "774635526637"
+        order_create_date:
+          type: string
+          description: Дата/время формирования заказа
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          example: 2005-08-15T15:52:01Z
+        order_params_type:
+          type: array
+          description: Блок с параметрами заказа
+          items:
+            type: object
+            properties:
+              position_name:
+                type: string
+                maxLength: 256
+                description: Наименование товарной позиции
+                example: Water Still
+              position_count:
+                type: integer
+                maxLength: 6
+                description: Кол-во шт.товарной позиции
+                example: 10
+              position_sum:
+                type: integer
+                maxLength: 15
+                description: Сумма товарной позиции в минимильных единицах Валюты (копейках)
+                example: 4800
+              position_description:
+                type: string
+                maxLength: 1024
+                description: Описание товарной позиции
+                example: Water Still
+            additionalProperties: false
+            description: Описание блока с параметрами заказа
+            required:
+              - position_name
+        id_qr:
+          type: string
+          maxLength: 20
+          description: IdQR устройста, на котором сформирован заказ
+          example: "1000100051"
+        order_sum:
+          type: integer
+          description: Сумма заказа
+          example: 48000
+        currency:
+          type: string
+          maxLength: 3
+          description: Валюта
+          example: "810"
+        description:
+          type: string
+          maxLength: 256
+          description: Описание заказа для отображения в отчетности
+          example: Water Still
+      additionalProperties: false
+      description: Запрос на создание заказа
+      required:
+        - rq_uid
+        - rq_tm
+        - member_id
+        - order_number
+        - order_create_date
+        - id_qr
+        - order_sum
+        - currency
+    qr-creation-response:
+      properties:
+        status:
+          type: object
+          description: Параметры ответа
+          properties:
+            rq_uid:
+              type: string
+              maxLength: 32
+              description: Уникальный идентификатор запроса
+              example: ac11cA1CEae1D1111dABf1fD1Bb0acAd
+            rq_tm:
+              type: string
+              pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+              description: Дата/Время формирования запроса
+              example: 2005-08-15T15:52:01Z
+            order_number:
+              type: string
+              maxLength: 36
+              description: Номер заказа в CRM Клиента
+              example: "774635526637"
+            order_id:
+              type: string
+              maxLength: 36
+              description: ID заказа
+              example: "10001000518956637"
+            order_state:
+              type: string
+              maxLength: 20
+              description: Статус заказа
+              example: CREATED
+            order_form_url:
+              type: string
+              maxLength: 256
+              description: Ссылка на считывание QR code
+              example: https://sberbank.ru/qr/?uuid=111111111111111111
+            error_code:
+              type: string
+              maxLength: 6
+              description: Код выполнения запроса
+              example: "000000"
+            error_description:
+              type: string
+              maxLength: 1024
+              description: Описание ошибки выполнения запроса
+              example: Описание ошибки выполнения запроса
+          additionalProperties: false
+          required:
+            - rq_uid
+            - rq_tm
+            - order_id
+            - order_state
+            - order_form_url
+            - error_code
+      additionalProperties: false
+      description: Ответ на запрос по созданию заказа
+      required:
+        - status
