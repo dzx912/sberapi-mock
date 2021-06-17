@@ -1,7 +1,8 @@
-package main
+package oapi
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
 )
@@ -18,14 +19,29 @@ func generate(level int, schema *openapi3.SchemaRef) (interface{}, error) {
 		t := schema.Value.Type
 
 		if t == "string" {
+			if schema.Value.Example != nil {
+				return schema.Value.Example, nil
+			}
 			return "fixture-string", nil
 		}
 
 		if t == "number" {
+			if schema.Value.Example != nil {
+				return schema.Value.Example, nil
+			}
 			return 0.0, nil
 		}
 
 		if t == "integer" {
+			if schema.Value.Example != nil {
+				n, err := strconv.ParseInt(schema.Value.Example.(string), 10, 64)
+				
+				if err != nil {
+					return 0, nil
+				}
+				
+				return n, nil
+			}
 			return 0, nil
 		}
 
@@ -34,6 +50,9 @@ func generate(level int, schema *openapi3.SchemaRef) (interface{}, error) {
 		}
 
 		if t == "boolean" {
+			if schema.Value.Example != nil {
+				return schema.Value.Example, nil
+			}
 			return false, nil
 		}
 
@@ -54,3 +73,4 @@ func generate(level int, schema *openapi3.SchemaRef) (interface{}, error) {
 
 	return nil, fmt.Errorf("unexpected schema format")
 }
+

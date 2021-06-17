@@ -16,3 +16,6 @@
 
 # vscode
 .vscode
+
+# Build
+bin

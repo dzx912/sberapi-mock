@@ -69,7 +69,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/qr-creation-response"
+                $ref: "#/components/schemas/qr-status-response"
         "400":
           description: Client Error 400 Bad Request (Запрос не корректен)
         "401":
@@ -96,7 +96,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/qr-creation-request"
+              $ref: "#/components/schemas/qr-status-request"
         description: Тело запроса
         required: true
 tags: []
@@ -282,3 +282,147 @@ components:
       description: Ответ на запрос по созданию заказа
       required:
         - status
+    qr-status-request:
+      properties:
+        rq_uid:
+          type: string
+          maxLength: 32
+          description: Уникальный идентификатор запроса. Параметр должен совпадать с
+            передаваемым в HTTP-заголовке параметром x-Introspect-RqUID
+          example: ac11cA1CEae1D1111dABf1fD1Bb0acAd
+        rq_tm:
+          type: string
+          description: Дата/Время формирования запроса
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          example: "2005-08-15T15:52:01Z"
+        order_id:
+          type: string
+          maxLength: 36
+          description: "10001000518956637"
+      additionalProperties: false
+      description: Запрос на получение статуса заказа
+      required:
+      - rq_uid
+      - rq_tm
+      - order_id
+    qr-status-response:
+      properties:
+        status:
+          type: object
+          properties:
+            rq_uid:
+              type: string
+              maxLength: 32
+              description: Уникальный идентификатор запроса
+              example: ac11cA1CEae1D1111dABf1fD1Bb0acAd
+            rq_tm:
+              type: string
+              description: Дата/Время формирования запроса
+              pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+              example: "2005-08-15T15:52:01Z"
+            mid:
+              type: string
+              maxLength: 15
+              description: Уникальный идентификатор Торговой точки
+              example: "787586342598"
+            tid:
+              type: string
+              maxLength: 8
+              description: Уникальный идентификатор терминала
+              example: "75863425"
+            id_qr:
+              type: string
+              maxLength: 20
+              description: IdQR устройста, на котором сформирован заказ
+              example: "1000100051"
+            order_id:
+              type: string
+              maxLength: 36
+              description: ID заказа
+              example: "10001000518956637"
+            order_state:
+              type: string
+              description: Статус заказа
+              maxLength: 20
+              example: PAID
+            order_operation_params:
+              type: array
+              description: Блок с перечнем операций, привязанных к данному заказу с
+                детализацией по каждой операции
+              items:
+                properties:
+                  operation_id:
+                    type: string
+                    maxLength: 50
+                    description: Идентификатор операции
+                    example: 10001HFYYR8956637
+                  operation_date_time:
+                    type: string
+                    description: Дата/Время регистрации заказа
+                    pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+                    example: "2005-08-15T15:52:01Z"
+                  rrn:
+                    type: string
+                    maxLength: 12
+                    description: RRN операции
+                    example: "664773635423"
+                  operation_type:
+                    type: string
+                    maxLength: 32
+                    description: Тип операции
+                    example: Отмена
+                  operation_sum:
+                    type: integer
+                    description: Сумма операции
+                    example: 30000
+                  operation_currency:
+                    type: string
+                    maxLength: 3
+                    description: Валюта операции
+                    example: "810"
+                  auth_code:
+                    type: string
+                    maxLength: 8
+                    description: Код авторизации
+                    example: "885967"
+                  response_code:
+                    type: string
+                    maxLength: 2
+                    description: Код выполнения запроса
+                    example: "00"
+                  response_desc:
+                    type: string
+                    maxLength: 256
+                    description: Описание ошибки выполнения запроса
+                    example: Описание ошибки выполнения запроса
+                additionalProperties: false
+                description: Параметры операции
+                required:
+                - operation_id
+                - operation_date_time
+                - rrn
+                - operation_type
+                - operation_sum
+                - operation_currency
+                - auth_code
+                - response_code
+            error_code:
+              type: string
+              maxLength: 6
+              description: Код выполнения запроса
+              example: "000000"
+            error_description:
+              type: string
+              maxLength: 1024
+              description: Описание ошибки выполнения запроса
+              example: Описание ошибки выполнения запроса
+          additionalProperties: false
+          description: Ответ на запрос по созданию заказа
+          required:
+          - rq_uid
+          - rq_tm
+          - order_id
+          - error_code
+      additionalProperties: false
+      required:
+      - status
