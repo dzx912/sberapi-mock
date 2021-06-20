@@ -113,8 +113,6 @@ x-ibm-endpoints:
   - endpointUrl: https://dev.api.sberbank.ru/ru/prod
     type:
       - development
-servers:
-  - url: /order/v1
 components:
   securitySchemes:
     clientIdHeader:

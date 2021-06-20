@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/rige1/sberapi-mock/config"
 	"github.com/rige1/sberapi-mock/server"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -11,6 +11,10 @@ import (
 
 var (
 		port int32 
+		cert string
+		key string
+		clientCert string
+		validate bool
 
 		rootCmd = &cobra.Command{
 			Use: "sbermock",
@@ -26,23 +30,42 @@ var (
 
 func init() {
 	startCmd.PersistentFlags().Int32Var(&port, "port", 8080, "server port, default 8080")
+	startCmd.PersistentFlags().StringVar(&cert, "cert", "", "server certificate")
+	startCmd.PersistentFlags().StringVar(&key, "key", "", "server certificate key")
+	startCmd.PersistentFlags().StringVar(&clientCert, "client-cert", "", "client certificate (mTLS) for verification")
+	startCmd.PersistentFlags().BoolVar(&validate, "validate", true, "validate incoming request, default true")
 	rootCmd.AddCommand(startCmd)
 }
 
 
 func start(cmd *cobra.Command, args[]string) {
-	mockServer, err := server.NewMockServerDefault()
+
+	config := config.Config {
+		Port: int(port),
+		Cert: cert,
+		Key: key,
+		ClientCert: clientCert,
+		Validate: validate,
+	}
+
+	mockServer, err := server.NewMockServerDefault(config)
 
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	
-	mockServer.Run(fmt.Sprintf(":%d", port))
+	err = mockServer.Run()
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
+		log.Error(err)
 		os.Exit(1)
 	}
 }
