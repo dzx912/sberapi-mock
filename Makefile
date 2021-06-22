@@ -1,5 +1,17 @@
+GOCMD=go
+GOTEST=$(GOCMD) test
+BINARY_NAME=sbermock
+VERSION?=0.0.0
+
+
 build: 
-	go build -o bin/sbermock *.go
+	mkdir -p out/bin
+	$(GOCMD) build -o out/bin/$(BINARY_NAME) .
+
+clean:
+	rm -fr ./bin
+	rm -fr ./out
+
 
 run-server:
-	go run *.go start
+	$(GOCMD) run *.go start

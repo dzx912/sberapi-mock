@@ -11,6 +11,10 @@ type Generator struct {
 	Schema *openapi3.SchemaRef
 }
 
+func NewGenerator(schema *openapi3.SchemaRef) *Generator {
+	return &Generator{ Schema: schema }
+}
+
 func (g *Generator) Generate() (interface{}, error) {
 	return generate(0, g.Schema)
 }

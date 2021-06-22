@@ -19,6 +19,7 @@ func LoadFromEmbedFS() ([]*openapi3.T, error) {
 		if err != nil {
 			log.Errorf("error while walk %s %s", path, err)
 		}
+
 		if !file.IsDir() {
 			data, _ := openapiFS.ReadFile(path)
 

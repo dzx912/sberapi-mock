@@ -18,4 +18,5 @@
 .vscode
 
 # Build
-bin
+out/
+bin/

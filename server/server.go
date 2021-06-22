@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -18,12 +19,12 @@ import (
 )
 
 type MockServer struct {
-	addr string
-	cert string
-	key string
+	addr       string
+	cert       string
+	key        string
 	clientCert string
-	tlsConfig *tls.Config
-	e *gin.Engine
+	tlsConfig  *tls.Config
+	e          *gin.Engine
 }
 
 func NewMockServerDefault(config config.Config) (*MockServer, error) {
@@ -44,7 +45,7 @@ func NewMockServer(config config.Config, engine *gin.Engine) (*MockServer, error
 		return nil, err
 	}
 
-	var tlsConfig *tls.Config = nil 
+	var tlsConfig *tls.Config = nil
 
 	if config.ClientCert != "" {
 		clientCert, err := ioutil.ReadFile(config.ClientCert)
@@ -58,26 +59,25 @@ func NewMockServer(config config.Config, engine *gin.Engine) (*MockServer, error
 		certPool.AppendCertsFromPEM(clientCert)
 
 		tlsConfig = &tls.Config{
-				ClientCAs: certPool,
-				ClientAuth: tls.RequireAndVerifyClientCert,
+			ClientCAs:  certPool,
+			ClientAuth: tls.RequireAndVerifyClientCert,
 		}
 	}
 
-
 	return &MockServer{
-		addr: fmt.Sprintf(":%d", config.Port),
+		addr:       fmt.Sprintf(":%d", config.Port),
 		clientCert: config.Cert,
-		cert: config.Cert,
-		key: config.Key,
-		tlsConfig: tlsConfig,
-		e: e,
+		cert:       config.Cert,
+		key:        config.Key,
+		tlsConfig:  tlsConfig,
+		e:          e,
 	}, nil
 }
 
 func (m *MockServer) Run() error {
 
 	server := &http.Server{
-		Addr: m.addr,
+		Addr:    m.addr,
 		Handler: m.e,
 	}
 
@@ -108,12 +108,12 @@ func initRouters(engine *gin.Engine, validate bool) error {
 
 		if err != nil {
 			log.Error(err)
-			return err 
+			return err
 		}
 
 		for method, methodRef := range doc.Paths {
 
-			g := &oapi.Generator { Schema: methodRef.Post.Responses.Get(200).Value.Content.Get("application/json").Schema }
+			g := oapi.NewGenerator(methodRef.Post.Responses.Get(200).Value.Content.Get("application/json").Schema)
 
 			engine.POST(method, buildPostHandler(router, validate, g))
 
@@ -128,45 +128,48 @@ func initRouters(engine *gin.Engine, validate bool) error {
 	return nil
 }
 
+var nilAuthenticationFn openapi3filter.AuthenticationFunc = func(c context.Context, ai *openapi3filter.AuthenticationInput) error { return nil }
+
 func buildPostHandler(router routers.Router, validate bool, generator *oapi.Generator) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-			if validate {
-				route, pathParams, err := router.FindRoute(c.Request)
-
-				if err != nil  {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error": err.Error(),
-					})
-
-					return
-				}
-
-				requestValidationInput := &openapi3filter.RequestValidationInput{
-					Request:    c.Request,
-					PathParams: pathParams,
-					Route:      route,
-				}
-
-				if err := openapi3filter.ValidateRequest(c.Request.Context(), requestValidationInput); err != nil {
-					c.JSON(http.StatusBadRequest, gin.H{
-						"error": err.Error(),
-					})
-
-					return 
-				}
-			}
-
-			body, err := generator.Generate()
+		if validate {
+			route, pathParams, err := router.FindRoute(c.Request)
 
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 				})
 
-				return 
+				return
 			}
 
-			c.JSON(http.StatusOK, body)
+			requestValidationInput := &openapi3filter.RequestValidationInput{
+				Request:    c.Request,
+				PathParams: pathParams,
+				Route:      route,
+				Options: &openapi3filter.Options{
+					AuthenticationFunc: nilAuthenticationFn,
+				},
+			}
+
+			if err := openapi3filter.ValidateRequest(c.Request.Context(), requestValidationInput); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+				return
+			}
 		}
+
+		body, err := generator.Generate()
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, body)
+	}
 }
