@@ -1,6 +1,6 @@
 GOCMD=go
 GOTEST=$(GOCMD) test
-BINARY_NAME=sbermock
+BINARY_NAME=sberapi-mock
 VERSION?=0.0.0
 
 
