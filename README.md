@@ -32,8 +32,16 @@ sberapi-mock start --cert server_cert.pem --key server_key.pem --client-cert cli
 sberapi-mock start --ignore-validation
 ```
 
-Пример запроса: 
+## Примеры запросов 
 
+Cписок доступных API:
+```sh
+curl http://localhost:8084
+
+(POST) /creation
+(POST) /status
+```
+Создание QR: 
 ```sh
 # Запускаем заглушку без проверки запросов 
 sberapi-mock start --ignore-validation

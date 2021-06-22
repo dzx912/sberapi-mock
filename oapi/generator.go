@@ -2,7 +2,6 @@ package oapi
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
 )
@@ -31,26 +30,29 @@ func generate(level int, schema *openapi3.SchemaRef) (interface{}, error) {
 
 		if t == "number" {
 			if schema.Value.Example != nil {
-				return schema.Value.Example, nil
+				return float64(schema.Value.Example.(float64)), nil
 			}
-			return 0.0, nil
+			return float64(0.0), nil
 		}
 
 		if t == "integer" {
 			if schema.Value.Example != nil {
-				n, err := strconv.ParseInt(schema.Value.Example.(string), 10, 64)
-				
-				if err != nil {
-					return 0, nil
-				}
+				n := int64(schema.Value.Example.(float64)) 
 				
 				return n, nil
 			}
-			return 0, nil
+
+			return int64(0), nil
 		}
 
 		if t == "array" {
-			return make([]interface{}, 0), nil
+			item, err := generate(level + 1, schema.Value.Items)
+
+			if err != nil {
+				return make([]interface{}, 0), nil
+			}
+
+			return []interface{}{ item }, nil
 		}
 
 		if t == "boolean" {
