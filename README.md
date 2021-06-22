@@ -29,7 +29,31 @@ sberapi-mock start --cert server_cert.pem --key server_key.pem --client-cert cli
 
 Отключение валидации запроса: 
 ```sh
-sberapi-mock start --validate false
+sberapi-mock start --ignore-validation
+```
+
+Пример запроса: 
+
+```sh
+# Запускаем заглушку без проверки запросов 
+sberapi-mock start --ignore-validation
+
+# Запрос
+curl -X POST http://localhost:8080/creation -d '{}' | jq 
+
+# Ответ
+{
+  "status": {
+    "error_code": "000000",
+    "error_description": "Описание ошибки выполнения запроса",
+    "order_form_url": "https://sberbank.ru/qr/?uuid=111111111111111111",
+    "order_id": "10001000518956637",
+    "order_number": "774635526637",
+    "order_state": "CREATED",
+    "rq_tm": "2005-08-15T15:52:01Z",
+    "rq_uid": "ac11cA1CEae1D1111dABf1fD1Bb0acAd"
+  }
+}
 ```
 
 ## Сборка

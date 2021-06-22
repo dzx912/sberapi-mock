@@ -14,7 +14,7 @@ var (
 		cert string
 		key string
 		clientCert string
-		validate bool
+		ignoreValidation bool
 
 		rootCmd = &cobra.Command{
 			Use: "sbermock",
@@ -33,7 +33,7 @@ func init() {
 	startCmd.PersistentFlags().StringVar(&cert, "cert", "", "server certificate")
 	startCmd.PersistentFlags().StringVar(&key, "key", "", "server certificate key")
 	startCmd.PersistentFlags().StringVar(&clientCert, "client-cert", "", "client certificate (mTLS) for verification")
-	startCmd.PersistentFlags().BoolVar(&validate, "validate", true, "validate incoming request, default true")
+	startCmd.PersistentFlags().BoolVar(&ignoreValidation, "ignore-validation", false, "ignore validation of incoming request, default false")
 	rootCmd.AddCommand(startCmd)
 }
 
@@ -45,7 +45,7 @@ func start(cmd *cobra.Command, args[]string) {
 		Cert: cert,
 		Key: key,
 		ClientCert: clientCert,
-		Validate: validate,
+		Validate: !ignoreValidation,
 	}
 
 	mockServer, err := server.NewMockServerDefault(config)
