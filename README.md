@@ -69,3 +69,26 @@ curl -X POST http://localhost:8080/creation -d '{}' | jq
 ```sh 
 make build 
 ```
+
+## Docker
+### Сборка
+
+```sh 
+docker image build --tag sberapi-mock .
+```
+
+### Запуск
+
+```sh 
+docker run --publish 8080:8080 sberapi-mock
+```
+
+### Запуск с параметрами
+
+```sh 
+docker run --publish 8080:8080 sberapi-mock --ignore-validation
+```
+
+```sh 
+docker run --publish 8080:8080 --volume <absolume_path_to_cert_dir>:/app/cert/ sberapi-mock --cert /app/cert/server_cert.pem --key /app/cert/server_key.pem --client-cert /app/cert/client_cert.pem 
+```
