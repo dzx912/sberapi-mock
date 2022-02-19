@@ -1,21 +1,21 @@
 # sberapi-mock [![build status](https://github.com/rige1/sberapi-mock/actions/workflows/workflow.yml/badge.svg?branch=main)](https://github.com/rige1/sberapi-mock/actions/workflows/workflow.yml)
 
-Сервер заглушка Sber API. Используется для быстрой интеграции и тестирования 
+Сервер заглушка Sber API. Используется для быстрой интеграции и тестирования
 
-## Что умеет 
+## Что умеет
 
 * Генерирует и проверяет запросы используя OpenAPI 3
 * Имеет поддержку TLS и mTLS
 
-## Примеры использования 
+## Примеры использования
 
-Запуск без аргументов. Сервер будет слушать на порте 8080: 
+Запуск без аргументов. Сервер будет слушать на порте 8080:
 
 ```sh
 sberapi-mock start
 ```
 
-Запуск с указанием порта: 
+Запуск с указанием порта:
 
 ```sh
 sberapi-mock start --port 8084
@@ -27,21 +27,25 @@ sberapi-mock start --port 8084
 sberapi-mock start --cert server_cert.pem --key server_key.pem --client-cert client_cert.pem 
 ```
 
-Отключение валидации запроса: 
+Отключение валидации запроса:
+
 ```sh
 sberapi-mock start --ignore-validation
 ```
 
-## Примеры запросов 
+## Примеры запросов
 
 Cписок доступных API:
+
 ```sh
 curl http://localhost:8084
 
 (POST) /creation
 (POST) /status
 ```
-Создание QR: 
+
+Создание QR:
+
 ```sh
 # Запускаем заглушку без проверки запросов 
 sberapi-mock start --ignore-validation
@@ -71,24 +75,24 @@ make build
 ```
 
 ## Docker
-### Сборка
-
-```sh 
-docker image build --tag sberapi-mock .
-```
 
 ### Запуск
 
 ```sh 
-docker run --publish 8080:8080 sberapi-mock
+docker run --publish 8080:8080 ghcr.io/rige1/sberapi-mock:main
 ```
 
 ### Запуск с параметрами
 
 ```sh 
-docker run --publish 8080:8080 sberapi-mock --ignore-validation
+docker run --publish 8080:8080 ghcr.io/rige1/sberapi-mock:main --ignore-validation
 ```
 
 ```sh 
-docker run --publish 8080:8080 --volume <absolume_path_to_cert_dir>:/app/cert/ sberapi-mock --cert /app/cert/server_cert.pem --key /app/cert/server_key.pem --client-cert /app/cert/client_cert.pem 
+docker run --publish 8080:8080 \
+    --volume <absolume_path_to_cert_dir>:/app/cert/ \
+    ghcr.io/rige1/sberapi-mock:main \
+    --cert /app/cert/server_cert.pem \
+    --key /app/cert/server_key.pem \
+    --client-cert /app/cert/client_cert.pem 
 ```
